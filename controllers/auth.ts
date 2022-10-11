@@ -1,13 +1,14 @@
 import { db } from "../db"
 import bcrypt from "bcryptjs"
 
+
 export const register = (req: any, res: any) => {
 
-    //Check existing user
+    //Check if user exists
     const userSelectQuery = "SELECT * FROM users WHERE email = ? OR username = ?"
     db.query(userSelectQuery, [req.body.email, req.body.username], (error, data) => {
         if (error) return res.json(error)
-        if (data.length) return res.status(409).json("User already registered")
+        if (Array.isArray(data) && data.length) return res.status(409).json("User already registered")
 
         //Password encryption
         var unprotectedPassword = bcrypt.genSaltSync(10);
@@ -29,10 +30,21 @@ export const register = (req: any, res: any) => {
 
 export const login = (req: any, res: any) => {
 
+    //Check if user exists
+    const userSelectQuery = "SELECT * FROM users WHERE username = ?"
+    db.query(userSelectQuery, [req.body.username], (error, data: any) => {
+        if (error) return res.json(error)
+        if (Array.isArray(data) && data.length === 0) return res.status(404).json("User not found")
+
+        //Check matching passwords
+        const correctPasswords = bcrypt.compareSync(req.body.password, data[0].password)
+
+        if (!correctPasswords) return res.status(400).json("Worng username or password")
+    })
 }
 
 export const logout = (req: any, res: any) => {
 
 }
 
-// vídeo parou em 1:04:30 https://www.youtube.com/watch?v=0aPLk2e2Z3g
+// vídeo parou em 1:22:00 https://www.youtube.com/watch?v=0aPLk2e2Z3g
