@@ -1,6 +1,6 @@
 import { db } from "../db"
 import bcrypt from "bcryptjs"
-
+import jwt from "jsonwebtoken"
 
 export const register = (req: any, res: any) => {
 
@@ -39,12 +39,20 @@ export const login = (req: any, res: any) => {
         //Check matching passwords
         const correctPasswords = bcrypt.compareSync(req.body.password, data[0].password)
 
-        if (!correctPasswords) return res.status(400).json("Worng username or password")
+        if (!correctPasswords) return res.status(400).json("Wrong username or password")
+
+        const token = jwt.sign({ id: data[0].id }, process.env.JWT_SECRET as string)
+
+        //Prevent passing the password in the cookie, even if it is hashed.
+        const { password, ...otherFields } = data[0]
+
+        res.cookie("access_token", token, { httpOnly: true }).status(200).json(otherFields)
     })
 }
 
 export const logout = (req: any, res: any) => {
-
+    res.clearCookie("access_token", {
+        sameSite: "none",
+        secure: true
+    }).status(200).json("User has been logged out")
 }
-
-// vídeo parou em 1:22:00 https://www.youtube.com/watch?v=0aPLk2e2Z3g
