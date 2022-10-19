@@ -57,4 +57,4 @@ export const updatePost = (req: any, res: { json: (arg0: string) => void }) => {
     res.json("from post inside controller")
 }
 
-//Vídeo parou em 2:02:00
+//Vídeo parou em 2:09:00
